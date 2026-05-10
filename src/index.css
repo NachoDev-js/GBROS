@@ -1,0 +1,284 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    /* === GBROS Design System === */
+    /* Primary: Deep violet for trust and tech authority */
+    --gb-primary-50: 250 100% 97%;
+    --gb-primary-100: 251 91% 93%;
+    --gb-primary-200: 251 81% 86%;
+    --gb-primary-300: 252 73% 76%;
+    --gb-primary-400: 253 64% 64%;
+    --gb-primary-500: 254 56% 52%;
+    --gb-primary-600: 255 52% 44%;
+    --gb-primary-700: 256 50% 36%;
+
+    /* Surface palette: warm neutrals, not dead grays */
+    --gb-surface-0: 0 0% 100%;
+    --gb-surface-50: 240 5% 96%;
+    --gb-surface-100: 240 6% 93%;
+    --gb-surface-200: 240 5% 85%;
+    --gb-surface-300: 240 4% 68%;
+    --gb-surface-400: 240 4% 46%;
+    --gb-surface-500: 240 4% 28%;
+    --gb-surface-600: 240 5% 18%;
+    --gb-surface-700: 240 7% 12%;
+    --gb-surface-800: 240 10% 6%;
+
+    /* Semantic colors */
+    --gb-success: 152 62% 42%;
+    --gb-danger: 0 72% 51%;
+    --gb-warning: 38 92% 50%;
+    --gb-info: 205 78% 56%;
+
+    /* Focus ring */
+    --gb-focus: 254 56% 52%;
+  }
+
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    background-color: hsl(var(--gb-surface-50));
+    color: hsl(var(--gb-surface-700));
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+@layer components {
+  /* Input system: high-contrast, visible focus */
+  .gb-input {
+    width: 100%;
+    padding: 0.625rem 0.875rem;
+    border: 2px solid hsl(var(--gb-surface-200));
+    border-radius: 0.5rem;
+    background: hsl(var(--gb-surface-0));
+    color: hsl(var(--gb-surface-700));
+    font-size: 0.9375rem;
+    transition: border-color 180ms ease, box-shadow 180ms ease;
+    outline: none;
+  }
+  .gb-input::placeholder {
+    color: hsl(var(--gb-surface-300));
+  }
+  .gb-input:hover {
+    border-color: hsl(var(--gb-primary-300));
+  }
+  .gb-input:focus {
+    border-color: hsl(var(--gb-primary-500));
+    box-shadow: 0 0 0 3px hsla(var(--gb-primary-500) / 0.18);
+  }
+  .gb-input:disabled {
+    background: hsl(var(--gb-surface-100));
+    color: hsl(var(--gb-surface-400));
+    border-color: hsl(var(--gb-surface-200));
+    cursor: not-allowed;
+  }
+
+  /* Input error state */
+  .gb-input-error {
+    border-color: hsl(var(--gb-danger)) !important;
+  }
+  .gb-input-error:focus {
+    box-shadow: 0 0 0 3px hsla(var(--gb-danger) / 0.18) !important;
+  }
+
+  /* Error message */
+  .gb-error-text {
+    color: hsl(var(--gb-danger));
+    font-size: 0.8125rem;
+    margin-top: 0.25rem;
+    font-weight: 500;
+  }
+
+  /* Primary button */
+  .gb-btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    background: hsl(var(--gb-primary-600));
+    color: white;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    border-radius: 0.5rem;
+    border: none;
+    cursor: pointer;
+    transition: background 150ms ease, transform 80ms ease, box-shadow 150ms ease;
+  }
+  .gb-btn-primary:hover {
+    background: hsl(var(--gb-primary-700));
+    box-shadow: 0 2px 8px hsla(var(--gb-primary-600) / 0.35);
+  }
+  .gb-btn-primary:active {
+    transform: scale(0.97);
+  }
+  .gb-btn-primary:disabled {
+    background: hsl(var(--gb-surface-300));
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  /* Ghost/secondary button */
+  .gb-btn-ghost {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    background: hsl(var(--gb-surface-100));
+    color: hsl(var(--gb-surface-600));
+    font-weight: 500;
+    font-size: 0.9375rem;
+    border-radius: 0.5rem;
+    border: 2px solid transparent;
+    cursor: pointer;
+    transition: all 150ms ease;
+  }
+  .gb-btn-ghost:hover {
+    background: hsl(var(--gb-surface-200));
+    color: hsl(var(--gb-surface-700));
+    border-color: hsl(var(--gb-surface-300));
+  }
+  .gb-btn-ghost:active {
+    transform: scale(0.97);
+  }
+
+  /* Success button */
+  .gb-btn-success {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.625rem 1.25rem;
+    background: hsl(var(--gb-success));
+    color: white;
+    font-weight: 600;
+    font-size: 0.9375rem;
+    border-radius: 0.5rem;
+    border: none;
+    cursor: pointer;
+    transition: background 150ms ease, transform 80ms ease;
+  }
+  .gb-btn-success:hover {
+    background: hsl(152 62% 36%);
+    box-shadow: 0 2px 8px hsla(var(--gb-success) / 0.35);
+  }
+  .gb-btn-success:disabled {
+    background: hsl(var(--gb-surface-300));
+    cursor: not-allowed;
+    box-shadow: none;
+  }
+
+  /* Danger button */
+  .gb-btn-danger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.5rem;
+    background: transparent;
+    color: hsl(var(--gb-danger));
+    border: none;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: all 150ms ease;
+  }
+  .gb-btn-danger:hover {
+    background: hsla(var(--gb-danger) / 0.1);
+  }
+
+  /* Card system */
+  .gb-card {
+    background: hsl(var(--gb-surface-0));
+    border: 1px solid hsl(var(--gb-surface-200));
+    border-radius: 0.75rem;
+    box-shadow: 0 1px 3px hsla(var(--gb-surface-800) / 0.06);
+  }
+  .gb-card-elevated {
+    background: hsl(var(--gb-surface-0));
+    border: 1px solid hsl(var(--gb-surface-200));
+    border-radius: 0.75rem;
+    box-shadow: 0 4px 12px hsla(var(--gb-surface-800) / 0.08);
+  }
+
+  /* Product card hover for POS */
+  .gb-product-card {
+    background: hsl(var(--gb-surface-0));
+    border: 2px solid hsl(var(--gb-surface-200));
+    border-radius: 0.75rem;
+    padding: 1rem;
+    text-align: left;
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 200ms ease;
+  }
+  .gb-product-card:hover {
+    border-color: hsl(var(--gb-primary-400));
+    box-shadow: 0 4px 16px hsla(var(--gb-primary-600) / 0.12);
+    transform: translateY(-1px);
+  }
+  .gb-product-card:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+    border-color: hsl(var(--gb-surface-200));
+  }
+
+  /* Sidebar navigation */
+  .gb-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    font-size: 0.9375rem;
+    color: hsl(var(--gb-surface-300));
+    transition: all 180ms ease;
+  }
+  .gb-nav-item:hover {
+    background: hsla(var(--gb-surface-0) / 0.08);
+    color: hsl(var(--gb-surface-0));
+  }
+  .gb-nav-item-active {
+    background: hsl(var(--gb-primary-600));
+    color: white;
+    box-shadow: 0 2px 8px hsla(var(--gb-primary-600) / 0.4);
+  }
+  .gb-nav-item-active:hover {
+    background: hsl(var(--gb-primary-700));
+    color: white;
+  }
+
+  /* Toast / notification (replaces native alerts) */
+  .gb-toast {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    padding: 1rem 1.5rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    font-size: 0.9375rem;
+    box-shadow: 0 8px 24px hsla(var(--gb-surface-800) / 0.15);
+    animation: gb-toast-in 300ms ease forwards;
+    z-index: 100;
+  }
+  .gb-toast-success {
+    background: hsl(var(--gb-success));
+    color: white;
+  }
+  .gb-toast-error {
+    background: hsl(var(--gb-danger));
+    color: white;
+  }
+
+  @keyframes gb-toast-in {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}
