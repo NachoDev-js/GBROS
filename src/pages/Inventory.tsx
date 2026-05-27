@@ -22,6 +22,7 @@ const Inventory: React.FC = () => {
   const [id, setId] = useState('');
   const [nombre, setNombre] = useState('');
   const [precio, setPrecio] = useState('');
+  const [precioCosto, setPrecioCosto] = useState('');
   const [stock, setStock] = useState('');
   const [imagen, setImagen] = useState<string | null>(null);
   const [hasVariants, setHasVariants] = useState(false);
@@ -58,8 +59,8 @@ const Inventory: React.FC = () => {
     let finalId = id.trim();
     if (!finalId) {
       let rnd;
-      let maxDigits = 2;
-      let limit = 99;
+      let maxDigits = 3;
+      let limit = 999;
       let attempts = 0;
       do {
         attempts++;
@@ -73,7 +74,7 @@ const Inventory: React.FC = () => {
       } while (data.find(p => p.id === finalId));
     }
 
-    const errors = validateProductForm({ id: finalId, nombre, precio, stock: hasVariants ? '1' : stock });
+    const errors = validateProductForm({ id: finalId, nombre, precio, precio_costo: precioCosto, stock: hasVariants ? '1' : stock });
     setFormErrors(errors);
     if (errors.length > 0) return;
 
@@ -86,20 +87,26 @@ const Inventory: React.FC = () => {
       id: finalId,
       nombre,
       precio: parseFloat(precio),
+      precio_costo: parseFloat(precioCosto) || 0,
       stock: finalStock,
       imagen: imagen || undefined,
       variantes: hasVariants ? variantes.map(v => ({ ...v, stock: parseInt(v.stock as string, 10) || 0 })) as any : []
     };
 
-    if (editingProduct) {
-      await window.db.updateProduct(product);
-    } else {
-      await window.db.addProduct(product);
-    }
+    try {
+      if (editingProduct) {
+        await window.db.updateProduct(product);
+      } else {
+        await window.db.addProduct(product);
+      }
 
-    setIsModalOpen(false);
-    resetForm();
-    loadData();
+      setIsModalOpen(false);
+      resetForm();
+      loadData();
+    } catch (error: any) {
+      console.error('Error saving product:', error);
+      alert(`Error al guardar el producto: ${error.message || 'Error desconocido'}`);
+    }
   };
 
   const handleEdit = (product: Product) => {
@@ -107,6 +114,7 @@ const Inventory: React.FC = () => {
     setId(product.id);
     setNombre(product.nombre);
     setPrecio(product.precio.toString());
+    setPrecioCosto((product.precio_costo || 0).toString());
     setStock(product.stock.toString());
     setImagen(product.imagen || null);
     
@@ -134,6 +142,7 @@ const Inventory: React.FC = () => {
     setId('');
     setNombre('');
     setPrecio('');
+    setPrecioCosto('');
     setStock('');
     setImagen(null);
     setHasVariants(false);
@@ -337,6 +346,7 @@ const Inventory: React.FC = () => {
             </div>
 
             <form onSubmit={handleSave} className="space-y-4">
+              <div className="max-h-[65vh] overflow-y-auto pr-2 space-y-4">
               <div>
                 <label className="block text-sm font-medium mb-1.5" style={{ color: 'hsl(var(--gb-surface-600))' }}>
                   Código / SKU <span className="text-xs font-normal" style={{ color: 'hsl(var(--gb-surface-400))' }}>(Dejar en blanco para auto-generar)</span>
@@ -389,10 +399,25 @@ const Inventory: React.FC = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="block text-sm font-medium mb-1.5" style={{ color: 'hsl(var(--gb-surface-600))' }}>
-                    Precio ($)
+                    P. Costo ($)
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={precioCosto}
+                    onChange={e => setPrecioCosto(e.target.value)}
+                    className={`gb-input ${getFieldError('precio_costo') ? 'gb-input-error' : ''}`}
+                    placeholder="0.00"
+                  />
+                  {getFieldError('precio_costo') && <p className="gb-error-text">{getFieldError('precio_costo')}</p>}
+                </div>
+                <div>
+                  <label className="block text-sm font-medium mb-1.5" style={{ color: 'hsl(var(--gb-surface-600))' }}>
+                    P. Venta ($)
                   </label>
                   <input
                     type="number"
@@ -408,7 +433,7 @@ const Inventory: React.FC = () => {
                 </div>
                 <div>
                   <label className="block text-sm font-medium mb-1.5" style={{ color: 'hsl(var(--gb-surface-600))' }}>
-                    Stock {hasVariants && '(Automático)'}
+                    Stock {hasVariants && '(Auto)'}
                   </label>
                   <input
                     type="number"
@@ -457,7 +482,8 @@ const Inventory: React.FC = () => {
                   </div>
                 )}
               </div>
-              <div className="flex justify-end gap-3 pt-3">
+              </div>
+              <div className="flex justify-end gap-3 pt-3 border-t mt-4" style={{ borderColor: 'hsl(var(--gb-surface-200))' }}>
                 <button
                   type="button"
                   onClick={() => setIsModalOpen(false)}

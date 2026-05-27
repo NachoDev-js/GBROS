@@ -27,10 +27,14 @@ const POS: React.FC = () => {
     setProducts(data);
   };
 
-  const filteredProducts = searchQuery.length < 2 ? [] : products.filter(p => 
-    p.nombre.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    p.id.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const searchTerms = React.useMemo(() => searchQuery.toLowerCase().split(/\s+/).filter(Boolean), [searchQuery]);
+  const filteredProducts = React.useMemo(() => {
+    if (searchQuery.length < 2) return [];
+    return products.filter(p => {
+      const searchableText = `${p.nombre.toLowerCase()} ${p.id.toLowerCase()}`;
+      return searchTerms.every(term => searchableText.includes(term));
+    });
+  }, [products, searchQuery, searchTerms]);
 
   const handleProductClick = (product: Product) => {
     if (product.variantes && product.variantes.length > 0) {
@@ -133,7 +137,7 @@ const POS: React.FC = () => {
                     <div className="text-xs font-mono mb-1" style={{ color: 'hsl(var(--gb-surface-400))' }}>
                       {product.id}
                     </div>
-                    <div className="font-semibold mb-2 line-clamp-2 leading-tight" style={{ color: 'hsl(var(--gb-surface-700))' }}>
+                    <div className="font-semibold mb-2 leading-tight" style={{ color: 'hsl(var(--gb-surface-700))' }}>
                       {product.nombre}
                     </div>
                   </div>

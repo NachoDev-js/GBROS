@@ -7,6 +7,7 @@ export interface ProductFormData {
   id: string;
   nombre: string;
   precio: string;
+  precio_costo?: string;
   stock: string;
 }
 
@@ -29,6 +30,13 @@ export function validateProductForm(data: ProductFormData): ValidationError[] {
   const precio = parseFloat(data.precio);
   if (isNaN(precio) || precio < 0) {
     errors.push({ field: 'precio', message: 'El precio debe ser un número mayor o igual a 0.' });
+  }
+
+  if (data.precio_costo !== undefined && data.precio_costo !== '') {
+    const precioCosto = parseFloat(data.precio_costo);
+    if (isNaN(precioCosto) || precioCosto < 0) {
+      errors.push({ field: 'precio_costo', message: 'El precio de costo debe ser mayor o igual a 0.' });
+    }
   }
 
   const stock = parseInt(data.stock, 10);

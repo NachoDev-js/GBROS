@@ -14,7 +14,9 @@
   },
   "dependencies": {
     "@tanstack/react-table": "^8.21.3",
+    "@types/pg": "^8.20.0",
     "lucide-react": "^1.14.0",
+    "pg": "^8.20.0",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-router-dom": "^7.15.0",
@@ -69,7 +71,19 @@
     },
     "files": [
       "dist/**/*",
-      "dist-electron/**/*"
+      "dist-electron/**/*",
+      "node_modules/**/*",
+      "!node_modules/**/*.md",
+      "!node_modules/**/*.ts",
+      "!node_modules/**/test/**",
+      "!node_modules/**/tests/**",
+      "!node_modules/**/.github/**"
+    ],
+    "extraFiles": [
+      {
+        "from": ".env.example",
+        "to": ".env.example"
+      }
     ]
   }
 }

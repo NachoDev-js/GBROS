@@ -8,6 +8,7 @@ export interface Product {
   id: string;
   nombre: string;
   precio: number;
+  precio_costo?: number;
   stock: number;
   estado_activo?: number;
   imagen?: string;
