@@ -1,6 +1,12 @@
 # GBROS POS - Sistema de Punto de Venta y Gestión de Inventario
 
 GBROS POS es una aplicación de escritorio diseñada para gestionar puntos de venta (POS) e inventarios, construida con tecnologías web modernas y empaquetada para escritorio mediante Electron. Utiliza PostgreSQL como motor de base de datos para garantizar persistencia robusta, alta concurrencia y seguridad de la información.
+<img width="1181" height="789" alt="image" src="https://github.com/user-attachments/assets/1c52dd0d-f8d8-4706-9707-be781a0d4141" />
+<img width="1178" height="784" alt="image" src="https://github.com/user-attachments/assets/eaf78211-1732-4668-9788-8535ec25abd1" />
+<img width="1181" height="786" alt="image" src="https://github.com/user-attachments/assets/77f1fe6d-bbac-4f12-a1c2-8689d3a18708" />
+<img width="1180" height="789" alt="image" src="https://github.com/user-attachments/assets/3cad9f63-4b69-4170-bce8-bff35c53130b" />
+<img width="1177" height="784" alt="image" src="https://github.com/user-attachments/assets/6d0c2778-e0fc-4d3a-9711-f1d3d0fdfd35" />
+<img width="1181" height="786" alt="image" src="https://github.com/user-attachments/assets/90c145f4-9ee4-43e1-a909-618fa12bbcb9" />
 
 ## 🚀 Características Principales
 
