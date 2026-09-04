@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useSaleSession } from '../modules/sale';
-import { productsRepo } from '../repositories';
+import { useProductCatalog } from '../modules/catalog';
 import type { Product } from '../types/global';
 import { calculateChange } from '../lib/validation';
 import type { ValidationError } from '../lib/validation';
 import { Search, ShoppingCart, Trash2, CreditCard, Minus, Plus, X, Check, Image as ImageIcon } from 'lucide-react';
 
 const POS: React.FC = () => {
-  const [products, setProducts] = useState<Product[]>([]);
+  const { products, loadProducts } = useProductCatalog();
   const [searchQuery, setSearchQuery] = useState('');
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
   const [montoRecibido, setMontoRecibido] = useState('');
@@ -23,11 +23,6 @@ const POS: React.FC = () => {
   useEffect(() => {
     loadProducts();
   }, []);
-
-  const loadProducts = async () => {
-    const data = await productsRepo.getProducts();
-    setProducts(data);
-  };
 
   const searchTerms = React.useMemo(() => searchQuery.toLowerCase().split(/\s+/).filter(Boolean), [searchQuery]);
   const filteredProducts = React.useMemo(() => {

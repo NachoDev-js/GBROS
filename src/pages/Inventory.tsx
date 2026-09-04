@@ -8,15 +8,15 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import type { Product } from '../types/global';
-import { productsRepo, platformBridge } from '../repositories';
-import { validateProductForm } from '../lib/validation';
+import { platformBridge } from '../repositories';
+import { useProductCatalog } from '../modules/catalog';
 import type { ValidationError } from '../lib/validation';
 import { Plus, Edit, Trash2, X, Image as ImageIcon, Search } from 'lucide-react';
 
 const columnHelper = createColumnHelper<Product>();
 
 const Inventory: React.FC = () => {
-  const [data, setData] = useState<Product[]>([]);
+  const { products: data, loadProducts, saveProduct, deleteProduct } = useProductCatalog();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [formErrors, setFormErrors] = useState<ValidationError[]>([]);
@@ -45,13 +45,8 @@ const Inventory: React.FC = () => {
     if (base64) setImagen(base64);
   };
 
-  const loadData = async () => {
-    const products = await productsRepo.getProducts();
-    setData(products);
-  };
-
   useEffect(() => {
-    loadData();
+    loadProducts();
   }, []);
 
   const getFieldError = (field: string): string | undefined =>
@@ -60,57 +55,27 @@ const Inventory: React.FC = () => {
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    let finalId = id.trim();
-    if (!finalId) {
-      let rnd;
-      let maxDigits = 3;
-      let limit = 999;
-      let attempts = 0;
-      do {
-        attempts++;
-        if (attempts > limit * 2) {
-          maxDigits++;
-          limit = Math.pow(10, maxDigits) - 1;
-          attempts = 0;
-        }
-        rnd = Math.floor(Math.random() * limit) + 1;
-        finalId = String(rnd).padStart(maxDigits, '0');
-      } while (data.find(p => p.id === finalId));
+    const result = await saveProduct(
+      {
+        id,
+        nombre,
+        precio,
+        precio_costo: precioCosto,
+        stock,
+        imagen,
+        hasVariants,
+        variantes,
+      },
+      editingProduct?.id
+    );
+
+    if (!result.ok) {
+      setFormErrors(result.error.errors);
+      return;
     }
 
-    const errors = validateProductForm({ id: finalId, nombre, precio, precio_costo: precioCosto, stock: hasVariants ? '1' : stock });
-    setFormErrors(errors);
-    if (errors.length > 0) return;
-
-    let finalStock = parseInt(stock, 10) || 0;
-    if (hasVariants) {
-      finalStock = variantes.reduce((acc, v) => acc + (parseInt(v.stock as string, 10) || 0), 0);
-    }
-
-    const product: Product = {
-      id: finalId,
-      nombre,
-      precio: parseFloat(precio),
-      precio_costo: parseFloat(precioCosto) || 0,
-      stock: finalStock,
-      imagen: imagen || undefined,
-      variantes: hasVariants ? variantes.map(v => ({ ...v, stock: parseInt(v.stock as string, 10) || 0 })) as any : []
-    };
-
-    try {
-      if (editingProduct) {
-        await productsRepo.updateProduct(product);
-      } else {
-        await productsRepo.addProduct(product);
-      }
-
-      setIsModalOpen(false);
-      resetForm();
-      loadData();
-    } catch (error: any) {
-      console.error('Error saving product:', error);
-      alert(`Error al guardar el producto: ${error.message || 'Error desconocido'}`);
-    }
+    setIsModalOpen(false);
+    resetForm();
   };
 
   const handleEdit = (product: Product) => {
@@ -136,8 +101,7 @@ const Inventory: React.FC = () => {
 
   const handleDelete = async (productId: string) => {
     if (confirm('¿Estás seguro de que deseas eliminar este producto?')) {
-      await productsRepo.deleteProduct(productId);
-      loadData();
+      await deleteProduct(productId);
     }
   };
 
