@@ -8,6 +8,7 @@ import {
   useReactTable,
 } from '@tanstack/react-table';
 import type { Product } from '../types/global';
+import { productsRepo, platformBridge } from '../repositories';
 import { validateProductForm } from '../lib/validation';
 import type { ValidationError } from '../lib/validation';
 import { Plus, Edit, Trash2, X, Image as ImageIcon, Search } from 'lucide-react';
@@ -40,12 +41,12 @@ const Inventory: React.FC = () => {
   };
 
   const handleImageUpload = async () => {
-    const base64 = await window.db.saveProductImage();
+    const base64 = await platformBridge.saveProductImage();
     if (base64) setImagen(base64);
   };
 
   const loadData = async () => {
-    const products = await window.db.getProducts();
+    const products = await productsRepo.getProducts();
     setData(products);
   };
 
@@ -98,9 +99,9 @@ const Inventory: React.FC = () => {
 
     try {
       if (editingProduct) {
-        await window.db.updateProduct(product);
+        await productsRepo.updateProduct(product);
       } else {
-        await window.db.addProduct(product);
+        await productsRepo.addProduct(product);
       }
 
       setIsModalOpen(false);
@@ -135,7 +136,7 @@ const Inventory: React.FC = () => {
 
   const handleDelete = async (productId: string) => {
     if (confirm('¿Estás seguro de que deseas eliminar este producto?')) {
-      await window.db.deleteProduct(productId);
+      await productsRepo.deleteProduct(productId);
       loadData();
     }
   };

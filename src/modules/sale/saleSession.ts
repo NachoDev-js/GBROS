@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import { validateCheckoutAmount, calculateChange } from '../../lib/validation';
+import { salesRepo } from '../../repositories';
 import type { Venta, DetalleVenta } from '../../types/global';
 import type {
   SaleSessionState,
@@ -129,8 +130,7 @@ export function createSaleSession(adapter?: ISalePersistenceAdapter) {
         variante_id: item.selectedVariant ? item.selectedVariant.id : undefined,
       }));
 
-      const activeAdapter =
-        adapter || (typeof window !== 'undefined' ? window.db : undefined);
+      const activeAdapter = adapter || salesRepo;
 
       if (!activeAdapter) {
         return {

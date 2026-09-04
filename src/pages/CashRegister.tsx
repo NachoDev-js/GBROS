@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import type { Venta } from '../types/global';
+import { salesRepo } from '../repositories';
 import { DollarSign, ShoppingBag, Trash2 } from 'lucide-react';
 
 const CashRegister: React.FC = () => {
@@ -10,14 +11,14 @@ const CashRegister: React.FC = () => {
   }, []);
 
   const loadSales = async () => {
-    const todaySales = await window.db.getTodaySales();
+    const todaySales = await salesRepo.getTodaySales();
     setSales(todaySales);
   };
 
   const handleDeleteSale = async (id: string) => {
     if (window.confirm('¿Estás seguro de que deseas eliminar esta venta? Esta acción no se puede deshacer y restaurará el stock.')) {
       try {
-        const result = await window.db.deleteVenta(id);
+        const result = await salesRepo.deleteVenta(id);
         if (result.success) {
           loadSales();
         } else {

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { TrendingUp, ShoppingCart, Calendar, Download, Award, X } from 'lucide-react';
+import { salesRepo, platformBridge } from '../repositories';
 
 type Period = 'diaria' | 'semanal' | 'mensual';
 
@@ -38,7 +39,7 @@ const Dashboard: React.FC = () => {
 
   const handleExportExcel = async (e: React.FormEvent) => {
     e.preventDefault();
-    await window.db.exportSalesExcel({ startDate, endDate });
+    await platformBridge.exportSalesExcel({ startDate, endDate });
     setExportModalOpen(false);
   };
 
@@ -47,7 +48,7 @@ const Dashboard: React.FC = () => {
   }, [period]);
 
   const loadData = async () => {
-    const dashData = await window.db.getDashboardData(period);
+    const dashData = await salesRepo.getDashboardData(period);
     setData(dashData);
   };
 

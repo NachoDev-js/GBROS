@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSaleSession } from '../modules/sale';
+import { productsRepo } from '../repositories';
 import type { Product } from '../types/global';
 import { calculateChange } from '../lib/validation';
 import type { ValidationError } from '../lib/validation';
@@ -24,7 +25,7 @@ const POS: React.FC = () => {
   }, []);
 
   const loadProducts = async () => {
-    const data = await window.db.getProducts();
+    const data = await productsRepo.getProducts();
     setProducts(data);
   };
 
