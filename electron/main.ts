@@ -1,4 +1,4 @@
-import { app, BrowserWindow, ipcMain, dialog } from 'electron';
+import { app, BrowserWindow, ipcMain, dialog, nativeImage } from 'electron';
 import path from 'node:path';
 import fs from 'node:fs';
 import * as xlsx from 'xlsx';
@@ -33,14 +33,14 @@ ipcMain.handle('get-products', async () => {
   const { rows: products } = await pool.query(`
     SELECT 
       p.*,
-      COALESCE(
-        json_agg(pv.*) FILTER (WHERE pv.id IS NOT NULL), 
-        '[]'
-      ) as variantes
+      COALESCE(v.variantes, '[]'::json) as variantes
     FROM Productos p
-    LEFT JOIN Producto_Variantes pv ON p.id = pv.producto_id
+    LEFT JOIN (
+      SELECT producto_id, json_agg(pv.*) as variantes
+      FROM Producto_Variantes pv
+      GROUP BY producto_id
+    ) v ON p.id = v.producto_id
     WHERE p.estado_activo = 1
-    GROUP BY p.id
   `);
   
   return products.map(normalizeProduct);
@@ -209,6 +209,38 @@ ipcMain.handle('insert-venta', async (_, { venta, detalles }) => {
   }
 });
 
+ipcMain.handle('delete-venta', async (_, id) => {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+    
+    // get detalles to restock
+    const { rows: detalles } = await client.query('SELECT * FROM Detalle_Ventas WHERE venta_id = $1', [id]);
+    
+    for (const d of detalles) {
+      await client.query('UPDATE Productos SET stock = stock + $1 WHERE id = $2', [d.cantidad, d.producto_id]);
+      if (d.variante_id) {
+        await client.query('UPDATE Producto_Variantes SET stock = stock + $1 WHERE id = $2', [d.cantidad, d.variante_id]);
+      }
+    }
+    
+    // delete detalles
+    await client.query('DELETE FROM Detalle_Ventas WHERE venta_id = $1', [id]);
+    
+    // delete venta
+    await client.query('DELETE FROM Ventas WHERE id = $1', [id]);
+    
+    await client.query('COMMIT');
+    return { success: true };
+  } catch (error: any) {
+    await client.query('ROLLBACK');
+    console.error('Error al eliminar venta:', error);
+    return { success: false, message: error.message };
+  } finally {
+    client.release();
+  }
+});
+
 // ─────────────────────────────────────────────
 // IPC: Exportaciones
 // ─────────────────────────────────────────────
@@ -311,13 +343,22 @@ ipcMain.handle('save-product-image', async () => {
   if (canceled || filePaths.length === 0) return null;
 
   const sourcePath = filePaths[0];
-  const imageBuffer = fs.readFileSync(sourcePath);
-  const ext = path.extname(sourcePath).toLowerCase();
-  let mimeType = 'image/jpeg';
-  if (ext === '.png') mimeType = 'image/png';
-  if (ext === '.webp') mimeType = 'image/webp';
+  let image = nativeImage.createFromPath(sourcePath);
+  
+  if (image.isEmpty()) return null;
 
-  return `data:${mimeType};base64,${imageBuffer.toString('base64')}`;
+  const size = image.getSize();
+  if (size.width > 300 || size.height > 300) {
+    const isWide = size.width > size.height;
+    image = image.resize({
+      width: isWide ? 300 : Math.round(size.width * (300 / size.height)),
+      height: !isWide ? 300 : Math.round(size.height * (300 / size.width)),
+      quality: 'good'
+    });
+  }
+
+  const imageBuffer = image.toJPEG(85);
+  return `data:image/jpeg;base64,${imageBuffer.toString('base64')}`;
 });
 
 // ─────────────────────────────────────────────

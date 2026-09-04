@@ -11,4 +11,5 @@ contextBridge.exposeInMainWorld('db', {
   exportDatabase: () => ipcRenderer.invoke('export-database'),
   exportSalesExcel: (data: { startDate: string, endDate: string }) => ipcRenderer.invoke('export-sales-excel', data),
   saveProductImage: () => ipcRenderer.invoke('save-product-image'),
+  deleteVenta: (id: string) => ipcRenderer.invoke('delete-venta', id),
 });

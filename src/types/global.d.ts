@@ -48,6 +48,7 @@ export interface IElectronDB {
   exportDatabase: () => Promise<{ success: boolean; message: string }>;
   exportSalesExcel: (data: { startDate: string; endDate: string }) => Promise<{ success: boolean; message: string }>;
   saveProductImage: () => Promise<string | null>;
+  deleteVenta: (id: string) => Promise<{ success: boolean; message: string }>;
 }
 
 declare global {

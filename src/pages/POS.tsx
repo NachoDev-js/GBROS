@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { useCartStore } from '../store/cartStore';
+import { useSaleSession } from '../modules/sale';
 import type { Product } from '../types/global';
-import { validateCheckoutAmount, calculateChange } from '../lib/validation';
+import { calculateChange } from '../lib/validation';
 import type { ValidationError } from '../lib/validation';
 import { Search, ShoppingCart, Trash2, CreditCard, Minus, Plus, X, Check, Image as ImageIcon } from 'lucide-react';
 
@@ -12,11 +12,12 @@ const POS: React.FC = () => {
   const [montoRecibido, setMontoRecibido] = useState('');
   const [checkoutErrors, setCheckoutErrors] = useState<ValidationError[]>([]);
   const [showSuccessToast, setShowSuccessToast] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
   const [variantModalOpen, setVariantModalOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   
-  const { items, addItem, removeItem, updateQuantity, clearCart, getTotal } = useCartStore();
+  const { items, addItem, removeItem, updateQuantity, clearCart, getTotal, checkout } = useSaleSession();
 
   useEffect(() => {
     loadProducts();
@@ -33,7 +34,7 @@ const POS: React.FC = () => {
     return products.filter(p => {
       const searchableText = `${p.nombre.toLowerCase()} ${p.id.toLowerCase()}`;
       return searchTerms.every(term => searchableText.includes(term));
-    });
+    }).slice(0, 60); // Optimize DOM rendering by showing max 60 results
   }, [products, searchQuery, searchTerms]);
 
   const handleProductClick = (product: Product) => {
@@ -50,40 +51,33 @@ const POS: React.FC = () => {
 
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault();
+    setIsSubmitting(true);
 
-    const errors = validateCheckoutAmount(montoRecibido, total);
-    setCheckoutErrors(errors);
-    if (errors.length > 0) return;
+    try {
+      const result = await checkout(montoRecibido);
 
-    const idVenta = `V-${Date.now()}`;
-    const venta = {
-      id: idVenta,
-      fecha_hora: new Date().toISOString(),
-      total,
-      monto_recibido: parseFloat(montoRecibido),
-      vuelto
-    };
+      if (result.ok) {
+        setIsCheckoutOpen(false);
+        setMontoRecibido('');
+        setCheckoutErrors([]);
+        loadProducts();
 
-    const detalles = items.map(item => ({
-      id: `D-${Date.now()}-${Math.random().toString(36).substring(7)}`,
-      venta_id: idVenta,
-      producto_id: item.id,
-      cantidad: item.cantidad,
-      precio_unitario: item.precio,
-      variante_id: item.selectedVariant ? item.selectedVariant.id : undefined
-    }));
-
-    await window.db.insertVenta({ venta, detalles });
-    
-    setIsCheckoutOpen(false);
-    clearCart();
-    setMontoRecibido('');
-    setCheckoutErrors([]);
-    loadProducts();
-
-    // Show success toast
-    setShowSuccessToast(true);
-    setTimeout(() => setShowSuccessToast(false), 3000);
+        // Show success toast
+        setShowSuccessToast(true);
+        setTimeout(() => setShowSuccessToast(false), 3000);
+      } else {
+        if (result.error.errors && result.error.errors.length > 0) {
+          setCheckoutErrors(result.error.errors);
+        } else {
+          alert(`Error al procesar la venta: ${result.error.message}`);
+        }
+      }
+    } catch (error) {
+      console.error('Error al realizar la venta:', error);
+      alert('Hubo un error al procesar la venta. Inténtalo de nuevo.');
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -391,11 +385,11 @@ const POS: React.FC = () => {
                 </button>
                 <button
                   type="submit"
-                  disabled={vuelto < 0 || isNaN(parseFloat(montoRecibido))}
-                  className="gb-btn-success flex-1 py-3"
+                  disabled={vuelto < 0 || isNaN(parseFloat(montoRecibido)) || isSubmitting}
+                  className={`gb-btn-success flex-1 py-3 ${isSubmitting ? 'opacity-70 cursor-not-allowed' : ''}`}
                 >
                   <Check size={18} />
-                  Confirmar Venta
+                  {isSubmitting ? 'Procesando...' : 'Confirmar Venta'}
                 </button>
               </div>
             </form>
@@ -433,7 +427,7 @@ const POS: React.FC = () => {
             <p className="text-sm mb-4" style={{ color: 'hsl(var(--gb-surface-500))' }}>
               Elija una variante para {selectedProduct.nombre}:
             </p>
-            <div className="space-y-2">
+            <div className="space-y-2 max-h-[60vh] overflow-y-auto pr-2 custom-scrollbar">
               {selectedProduct.variantes?.map(v => {
                 const currentQty = items.find(i => i.cartItemId === `${selectedProduct.id}-${v.id}`)?.cantidad || 0;
                 const remaining = v.stock - currentQty;

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import type { Venta } from '../types/global';
-import { DollarSign, ShoppingBag } from 'lucide-react';
+import { DollarSign, ShoppingBag, Trash2 } from 'lucide-react';
 
 const CashRegister: React.FC = () => {
   const [sales, setSales] = useState<Venta[]>([]);
@@ -12,6 +12,22 @@ const CashRegister: React.FC = () => {
   const loadSales = async () => {
     const todaySales = await window.db.getTodaySales();
     setSales(todaySales);
+  };
+
+  const handleDeleteSale = async (id: string) => {
+    if (window.confirm('¿Estás seguro de que deseas eliminar esta venta? Esta acción no se puede deshacer y restaurará el stock.')) {
+      try {
+        const result = await window.db.deleteVenta(id);
+        if (result.success) {
+          loadSales();
+        } else {
+          alert(`Error al eliminar la venta: ${result.message}`);
+        }
+      } catch (error) {
+        console.error(error);
+        alert('Ocurrió un error al intentar eliminar la venta.');
+      }
+    }
   };
 
   const totalVentas = sales.reduce((acc, sale) => acc + sale.total, 0);
@@ -105,6 +121,12 @@ const CashRegister: React.FC = () => {
               >
                 Monto Total
               </th>
+              <th
+                className="px-6 py-3.5 text-right text-xs font-semibold uppercase tracking-wider"
+                style={{ color: 'hsl(var(--gb-surface-400))' }}
+              >
+                Acciones
+              </th>
             </tr>
           </thead>
           <tbody>
@@ -125,11 +147,23 @@ const CashRegister: React.FC = () => {
                 <td className="px-6 py-4 whitespace-nowrap text-sm font-bold text-right" style={{ color: 'hsl(var(--gb-surface-700))' }}>
                   ${sale.total.toFixed(2)}
                 </td>
+                <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                  <button
+                    onClick={() => handleDeleteSale(sale.id)}
+                    className="p-1.5 rounded transition-colors"
+                    style={{ color: 'hsl(var(--gb-danger))' }}
+                    title="Eliminar Venta"
+                    onMouseEnter={e => { e.currentTarget.style.background = 'hsla(var(--gb-danger) / 0.1)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; }}
+                  >
+                    <Trash2 size={16} />
+                  </button>
+                </td>
               </tr>
             )) : (
               <tr>
                 <td
-                  colSpan={3}
+                  colSpan={4}
                   className="px-6 py-12 text-center text-sm"
                   style={{ color: 'hsl(var(--gb-surface-400))' }}
                 >

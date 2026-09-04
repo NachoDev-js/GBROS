@@ -187,6 +187,11 @@ export async function initializeDatabase(): Promise<void> {
         fecha_cierre TIMESTAMPTZ,
         efectivo_esperado NUMERIC(12,2) NOT NULL DEFAULT 0
       );
+
+      CREATE INDEX IF NOT EXISTS idx_productos_estado ON Productos(estado_activo);
+      CREATE INDEX IF NOT EXISTS idx_variantes_producto ON Producto_Variantes(producto_id);
+      CREATE INDEX IF NOT EXISTS idx_ventas_fecha ON Ventas(fecha_hora);
+      CREATE INDEX IF NOT EXISTS idx_detalle_venta ON Detalle_Ventas(venta_id);
     `);
 
     console.log('[DB] Tablas inicializadas correctamente en PostgreSQL.');

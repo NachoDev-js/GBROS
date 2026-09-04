@@ -3,12 +3,14 @@ import {
   createColumnHelper,
   flexRender,
   getCoreRowModel,
+  getFilteredRowModel,
+  getPaginationRowModel,
   useReactTable,
 } from '@tanstack/react-table';
 import type { Product } from '../types/global';
 import { validateProductForm } from '../lib/validation';
 import type { ValidationError } from '../lib/validation';
-import { Plus, Edit, Trash2, X, Image as ImageIcon } from 'lucide-react';
+import { Plus, Edit, Trash2, X, Image as ImageIcon, Search } from 'lucide-react';
 
 const columnHelper = createColumnHelper<Product>();
 
@@ -17,6 +19,7 @@ const Inventory: React.FC = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [formErrors, setFormErrors] = useState<ValidationError[]>([]);
+  const [globalFilter, setGlobalFilter] = useState('');
 
   // Form State
   const [id, setId] = useState('');
@@ -243,7 +246,18 @@ const Inventory: React.FC = () => {
   const table = useReactTable({
     data,
     columns,
+    state: {
+      globalFilter,
+    },
+    initialState: {
+      pagination: {
+        pageSize: 50,
+      },
+    },
+    onGlobalFilterChange: setGlobalFilter,
     getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
   });
 
   return (
@@ -252,16 +266,29 @@ const Inventory: React.FC = () => {
         <h1 className="text-2xl font-bold" style={{ color: 'hsl(var(--gb-surface-700))' }}>
           Inventario
         </h1>
-        <button
-          onClick={() => {
-            resetForm();
-            setIsModalOpen(true);
-          }}
-          className="gb-btn-primary"
-        >
-          <Plus size={20} />
-          <span>Nuevo Producto</span>
-        </button>
+        <div className="flex items-center gap-4">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={18} style={{ color: 'hsl(var(--gb-surface-400))' }} />
+            <input
+              type="text"
+              value={globalFilter}
+              onChange={e => setGlobalFilter(e.target.value)}
+              placeholder="Buscar productos..."
+              className="gb-input pl-10"
+              style={{ width: '250px' }}
+            />
+          </div>
+          <button
+            onClick={() => {
+              resetForm();
+              setIsModalOpen(true);
+            }}
+            className="gb-btn-primary"
+          >
+            <Plus size={20} />
+            <span>Nuevo Producto</span>
+          </button>
+        </div>
       </div>
 
       <div className="gb-card overflow-hidden">
@@ -321,6 +348,33 @@ const Inventory: React.FC = () => {
             )}
           </tbody>
         </table>
+        
+        {/* Pagination Controls */}
+        <div className="flex items-center justify-between px-6 py-3 border-t" style={{ borderColor: 'hsl(var(--gb-surface-200))', background: 'hsl(var(--gb-surface-50))' }}>
+          <div className="flex items-center gap-2">
+            <span className="text-sm" style={{ color: 'hsl(var(--gb-surface-600))' }}>
+              Página <span className="font-semibold">{table.getState().pagination.pageIndex + 1}</span> de <span className="font-semibold">{table.getPageCount() || 1}</span>
+            </span>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => table.previousPage()}
+              disabled={!table.getCanPreviousPage()}
+              className="px-3 py-1 text-sm font-medium rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ background: 'hsl(var(--gb-surface-200))', color: 'hsl(var(--gb-surface-700))' }}
+            >
+              Anterior
+            </button>
+            <button
+              onClick={() => table.nextPage()}
+              disabled={!table.getCanNextPage()}
+              className="px-3 py-1 text-sm font-medium rounded transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              style={{ background: 'hsl(var(--gb-surface-200))', color: 'hsl(var(--gb-surface-700))' }}
+            >
+              Siguiente
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* Modal */}
