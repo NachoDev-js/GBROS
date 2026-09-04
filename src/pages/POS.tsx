@@ -202,7 +202,7 @@ const POS: React.FC = () => {
           ) : (
             items.map(item => (
               <div
-                key={item.id}
+                key={item.cartItemId || item.id}
                 className="flex flex-col gap-2 p-3 rounded-lg"
                 style={{
                   background: 'hsl(var(--gb-surface-50))',

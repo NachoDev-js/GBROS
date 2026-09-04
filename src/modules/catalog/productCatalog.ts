@@ -1,4 +1,4 @@
-﻿import { create } from 'zustand';
+import { create } from 'zustand';
 import { validateProductForm } from '../../lib/validation';
 import { productsRepo } from '../../repositories';
 import type { IProductsRepository } from '../../repositories/types';
@@ -93,6 +93,24 @@ export function createProductCatalog(repo?: IProductsRepository) {
               : undefined,
           stock: hasVariants ? '1' : String(draft.stock ?? ''),
         });
+
+        if (hasVariants && draft.variantes) {
+          for (const [idx, v] of draft.variantes.entries()) {
+            if (!v.color || !v.color.trim()) {
+              validationErrors.push({
+                field: `variante_${idx}_color`,
+                message: `La variante #${idx + 1} debe tener un nombre/color.`,
+              });
+            }
+            const vStock = parseInt(String(v.stock), 10);
+            if (isNaN(vStock) || vStock < 0) {
+              validationErrors.push({
+                field: `variante_${idx}_stock`,
+                message: `El stock de la variante #${idx + 1} debe ser mayor o igual a 0.`,
+              });
+            }
+          }
+        }
 
         if (validationErrors.length > 0) {
           return {

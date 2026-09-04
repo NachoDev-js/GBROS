@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet, NavLink } from 'react-router-dom';
 import { ShoppingCart, Package, DollarSign, BarChart3, Database } from 'lucide-react';
+import { platformBridge } from '../repositories';
 
 const navItems = [
   { to: '/', icon: ShoppingCart, label: 'Punto de Venta' },
@@ -47,7 +48,7 @@ const Layout: React.FC = () => {
         <div className="p-3" style={{ borderTop: '1px solid hsla(0 0% 100% / 0.06)' }}>
           <button
             onClick={async () => {
-              const result = await window.db.exportDatabase();
+              const result = await platformBridge.exportDatabase();
               if (result.success) {
                 alert('¡Copia de seguridad guardada con éxito!');
               } else if (result.message !== 'Exportación cancelada') {

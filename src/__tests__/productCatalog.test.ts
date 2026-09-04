@@ -1,4 +1,4 @@
-﻿import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { createProductCatalog, generateUniqueSku } from '../modules/catalog/productCatalog';
 import { createInMemoryDatabase } from '../repositories/inMemoryDatabase';
 import type { Product } from '../types/global';
@@ -100,6 +100,24 @@ describe('ProductCatalog module', () => {
       if (!result.ok) {
         expect(result.error.errors.some((e) => e.field === 'nombre')).toBe(true);
         expect(result.error.errors.some((e) => e.field === 'precio')).toBe(true);
+      }
+    });
+
+    it('returns validation errors for empty variant color or negative variant stock', async () => {
+      const result = await useCatalog.getState().saveProduct({
+        nombre: 'Gorra',
+        precio: '5000',
+        hasVariants: true,
+        variantes: [
+          { color: '', stock: '5' },
+          { color: 'Verde', stock: '-1' },
+        ],
+      });
+
+      expect(result.ok).toBe(false);
+      if (!result.ok) {
+        expect(result.error.errors.some((e) => e.field.includes('color'))).toBe(true);
+        expect(result.error.errors.some((e) => e.field.includes('stock'))).toBe(true);
       }
     });
 
